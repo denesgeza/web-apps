@@ -6,12 +6,15 @@ from wtforms.validators import InputRequired, Email, Length
 
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'Thisisthesecretkey'
 Bootstrap(app)
+
 
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[InputRequired(), Length(min=4, max=15)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
     remember = BooleanField('remember me')
+
 
 @app.route('/')
 def index():
