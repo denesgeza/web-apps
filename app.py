@@ -1,14 +1,16 @@
-''' Video from
+""" Video from
 https://www.youtube.com/watch?v=8aTnmsDMldY
-'''
+"""
+
 from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import declarative_base, sessionmaker
-from sqlalchemy import Column, String, DateTime, Integer, create_engine
+from sqlalchemy import Column, String, Integer, create_engine
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Thisisthesecretkey'
@@ -52,9 +54,10 @@ def login():
     if form.validate_on_submit():
         user = local_session.query(User).filter(User.username == form.username.data).first()
         if user:
-            if user.password == form.password.data:
+            if check_password_hash(user.password, form.password.data):
                 return redirect(url_for('dashboard'))
-        return '<h1>Invalid username or password</h1>'
+            else:
+                return '<h1>Invalid username or password</h1>'
     return render_template('login.html', form=form)
 
 
@@ -62,18 +65,18 @@ def login():
 def signup():
     form = RegisterForm()
     if form.validate_on_submit():
-        new_user = User(username=form.username.data, email=form.email.data, password=form.password.data)
+        hashed_password = generate_password_hash(form.password.data, method='sha256')
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         local_session.add(new_user)
         local_session.commit()
         return '<h1> New user has been created! </h1>'
     return render_template('signup.html', form=form)
 
 
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     return render_template('dashboard.html')
 
 
 if __name__ == '__main__':
     app.run(debug=True)
-
