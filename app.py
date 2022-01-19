@@ -14,7 +14,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Thisisthesecretkey'
 conn = 'sqlite:////Users/denesgeza/Dropbox/Python/Projects/Flask/database.db'
-engine = create_engine(conn, echo=True)
+engine = create_engine(conn, echo=True, connect_args={'check_same_thread': False})
 Bootstrap(app)
 Session = sessionmaker()
 Base = declarative_base()
@@ -82,7 +82,7 @@ def signup():
     return render_template('signup.html', form=form)
 
 
-@app.route('/dashboard', methods=['GET', 'POST'])
+@app.route('/dashboard')
 @login_required
 def dashboard():
     return render_template('dashboard.html', name=current_user.username)
